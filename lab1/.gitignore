@@ -137,3 +137,10 @@ fabric.properties
 # *.ipr
 
 # End of https://www.gitignore.io/api/node,webstorm
+.gitignore
+.idea/
+array.txt
+broker.js
+package-lock.json
+receiver.js
+sender.js
