@@ -1,42 +1,47 @@
-let net = require("net");
-let prompt = require('prompt');
-let colors = require("colors/safe");
-
+const net = require('net');
+const prompt = require('prompt');
+const config = require('./config');
 let client = new net.Socket();
 
-client.connect(5000, function () {
-	console.log('Connected');
+client.connect(config.port, () => {
+    console.log('======= Sender is connected =======');
 
 });
 
-client.on('close', function () {
-	console.log('Connection closed');
+client.on('close', () => {
+    console.log('Connection closed');
 });
 
-client.on("error", function (err) {
-	console.log(err);
+client.on('error', (err) => {
+    console.log(err);
 });
 
-setTimeout(function () {
-	showPrompt();
-}, 500);
+setTimeout(() => {
+    showPrompt();
+}, 600);
 
 function showPrompt() {
-	prompt.start();
-	prompt.message = colors.rainbow("Message: ");
-	prompt.get(['text'], function (err, result) {
-		if (err) {
-			console.log(err);
-		}
-		if (result.text !== "") {
-			// Send to broker
-			let mess = {type: "post", text: result.text};
-			client.write(JSON.stringify(mess));
-			console.log("Message Sent!\n");
-			showPrompt();
-		} else {
-			console.log("Write a message.");
-			showPrompt();
-		}
-	});
+    prompt.start();
+    prompt.message = 'Message to be sent';
+    prompt.get(['text'], (err, result) => {
+        if (err) {
+            console.log(err);
+        }
+        if (result.text !== '') {
+
+            // Send to broker
+            let message = {
+                type: 'post',
+                text: result.text
+            };
+
+            client.write(JSON.stringify(message));
+            console.log('\nMessage Sent!\n');
+
+            showPrompt();
+        } else {
+            console.log('Your entry is empty');
+            showPrompt();
+        }
+    });
 }

@@ -1,48 +1,58 @@
+const fs = require('fs');
 const net = require('net');
-const PORT = 5000;
-const ADDRESS = '127.0.0.1';
-let fs = require('fs');
+const config = require('./config.json');
 
 let server = net.createServer(onClientConnected);
+
+const ADDRESS = config.host;
+const PORT = config.port;
+
 server.listen(PORT, ADDRESS);
+console.log('======= Broker is on =======');
 
-let messages = fs.readFileSync('array.txt').toString().split(",");
+let messages = fs.readFileSync('storage.txt').toString().split(',');
 
-function onClientConnected(socket) {
-	// Giving a name to this client
-	let clientName = `${socket.remoteAddress}:${socket.remotePort}`;
 
-	// Logging the message on the server
-	console.log(`${clientName} connected.`)
+async function onClientConnected(socket) {
 
-	// Triggered on data received by this client
-	socket.on('data', (data) => {
-		let msg;
-		msg = JSON.parse(data);
-		if (msg.type === "get") {
-			if (messages.length > 0) {
-				socket.write(JSON.stringify(messages.pop()))
-			} else {
-				socket.write(JSON.stringify("No messages in queue"))
-			}
-		}
+    // Giving a name to this client
+    let clientName = `${socket.remoteAddress}:${socket.remotePort}`;
 
-		if (msg.type === "post") {
-			messages.push(msg.text)
-		}
-		fs.writeFile('array.txt', messages, (data) => {
-		});
-		console.log(messages);
-	});
+    // Logging the message on the server
+    console.log(`${clientName} connected.`);
 
-	socket.on('error', () => {
-		console.log("errror")
-	});
-	socket.on('end', () => {
-		// Logging this message on the server
-		console.log(`${clientName} disconnected.`);
-	});
+    // Triggered on data received by this client
+    socket.on('data', (data) => {
+        let msg = JSON.parse(data);
+        switch (msg.type) {
+            case 'get':
+                if (messages.length > 0) {
+                    socket.write(JSON.stringify(messages.pop()));
+                } else {
+                    socket.write(JSON.stringify('No messages in queue'));
+                }
+                break;
+            case 'post': {
+                messages.push(msg.text);
+                break;
+            }
+            default:
+                console.log('Something went wrong');
+        }
+        console.log(messages);
+
+    });
+
+    fs.writeFileSync('storage.txt', messages);
+
+    socket.on('error', () => {
+        console.log('errror');
+    });
+
+    socket.on('end', () => {
+        // Logging this message on the server
+        console.log(`${clientName} disconnected.`);
+    });
+
 }
-
-console.log("Server is on");
 

@@ -1,53 +1,50 @@
-let net = require("net");
+let net = require('net');
 let prompt = require('prompt');
 let client = new net.Socket();
-let colors = require("colors/safe");
 
 
 client.connect(5000, function () {
-	console.log('Receiver connected');
+    console.log('======= Receiver connected =======');
 
 });
 client.on('data', (data) => {
-	let msg = JSON.parse(data);
-	console.log("\rReceived: " + msg);
+    let msg = JSON.parse(data);
+    console.log('\rReceived message: ' + msg);
 });
 client.on('close', function () {
-	console.log('Connection closed');
+    console.log('Connection closed');
 });
 
-client.on("error", function (err) {
-	console.log(err);
+client.on('error', function (err) {
+    console.log(err);
 });
 
-setTimeout(function () {
-	showPrompt();
-}, 500);
+let showPromptTimeout = () => {
+    return setTimeout(function () {
+        showPrompt();
+    }, 500);
+};
+
+showPromptTimeout();
 
 function showPrompt() {
-	prompt.start();
-	prompt.message = colors.white("Message: ");
-	prompt.get(['type', 'text'], function (err, result) {
-		if (err) {
-			console.log(err)
-		}
+    prompt.start();
+    prompt.message = 'Type get in order to get a message';
+    prompt.get(['command'], function (err, result) {
+        if (err) {
+            console.log(err);
+        }
 
-		let msg = {type: result.type, text: result.text};
+        let getMessage = {type: result.command};
 
-		if (result.type !== "") {
-			client.write(JSON.stringify(msg));
-			console.log("Message sent");
-			console.log("\r");
-			setTimeout(() => {
-				showPrompt();
-			}, 500);
-		} else {
-			console.log("Your entry is empty");
-			setTimeout(() => {
-				showPrompt();
-			}, 500);
-		}
+        if (result.type !== '') {
+            client.write(JSON.stringify(getMessage));
+            showPromptTimeout();
+        } else {
+            console.log('Your entry is empty');
+            showPromptTimeout();
+        }
 
-	});
+    });
 }
 
