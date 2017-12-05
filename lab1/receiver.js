@@ -1,10 +1,14 @@
 let net = require('net');
 let prompt = require('prompt');
 let client = new net.Socket();
+const config = require('./config');
 
 
-client.connect(5000, function () {
+client.connect(config.port, function () {
     console.log('======= Receiver connected =======');
+    console.log('Type 1 to see all queue');
+    console.log('Type 2 to get message from general queue');
+    console.log('Type 3 to get message from specifc queue');
 
 });
 client.on('data', (data) => {
@@ -22,29 +26,83 @@ client.on('error', function (err) {
 let showPromptTimeout = () => {
     return setTimeout(function () {
         showPrompt();
-    }, 500);
+    }, 600);
 };
 
 showPromptTimeout();
 
+
 function showPrompt() {
     prompt.start();
-    prompt.message = 'Type get in order to get a message';
-    prompt.get(['command'], function (err, result) {
-        if (err) {
+    prompt.message = 'Type your command';
+
+    prompt.get(['number'], (err, input) => {
+        try {
+            switch (Number(input.number)) {
+                case 1: {
+                    showAllQueues();
+                    break;
+                }
+                case 2: {
+                    getMessageFromGeneralQueue();
+                    break;
+                }
+                case 3: {
+                    getMessageFromSpecificQueue();
+                    break;
+                }
+                default:
+                    console.log('Something went wrong');
+            }
+        } catch (err) {
             console.log(err);
         }
+    });
 
-        let getMessage = {type: result.command};
+}
 
-        if (result.type !== '') {
-            client.write(JSON.stringify(getMessage));
+function getMessageFromGeneralQueue() {
+    prompt.start();
+    prompt.message = 'Get message from queue';
+    prompt.get(['type'], (err, input) => {
+        if (input.name !== '') {
+            let data = {
+                name: input.name,
+                type: 'general'
+            };
+            client.write(JSON.stringify(data));
             showPromptTimeout();
         } else {
             console.log('Your entry is empty');
             showPromptTimeout();
         }
+    });
+}
 
+function showAllQueues() {
+    let data = {
+        type: 'getQueueList'
+    };
+    client.write(JSON.stringify(data));
+    showPromptTimeout();
+
+}
+
+function getMessageFromSpecificQueue() {
+    prompt.start();
+    prompt.message = 'Get message from';
+    prompt.get(['queue'], (err, input) => {
+        if (input.name !== '') {
+            let data = {
+                name: input.name,
+                type: 'getFromQueue'
+            };
+            client.write(JSON.stringify(data));
+            showPromptTimeout();
+        } else {
+            console.log('Your entry is empty');
+            showPromptTimeout();
+        }
     });
 }
 
