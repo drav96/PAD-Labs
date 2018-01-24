@@ -5,10 +5,6 @@ let client = new net.Socket();
 
 client.connect(config.port, () => {
     console.log('======= Sender is connected =======');
-    console.log('Type 1 for creating queue');
-    console.log('Type 2 to see all queues');
-    console.log('Type 3 to push in specific queue');
-
 
 });
 
@@ -18,7 +14,7 @@ client.on('data', (data) => {
 });
 
 client.on('close', () => {
-    console.log('Connection closed');
+    console.log('\nConnection closed');
 });
 
 client.on('error', (err) => {
@@ -31,6 +27,10 @@ setTimeout(() => {
 
 
 function showPrompt() {
+    console.log('Type 1 for creating queue');
+    console.log('Type 2 to see all queues');
+    console.log('Type 3 to push in specific queue');
+
     prompt.start();
     prompt.message = 'Type your command';
 
@@ -51,6 +51,8 @@ function showPrompt() {
                 }
                 default:
                     console.log('Something went wrong');
+                    showPrompt();
+
             }
         } catch (err) {
             console.log(err);
@@ -70,6 +72,7 @@ function createQueue() {
             };
             client.write(JSON.stringify(data));
             showPrompt();
+
         } else {
             console.log('Your entry is empty');
             showPrompt();
@@ -97,7 +100,7 @@ function sendToSpecificQueue() {
             let data = {
                 queue: input.queue,
                 message: input.message,
-                type: 'sendToQueue'
+                type: 'postMessage'
             };
             client.write(JSON.stringify(data));
             showPrompt();

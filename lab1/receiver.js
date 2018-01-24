@@ -6,17 +6,14 @@ const config = require('./config');
 
 client.connect(config.port, function () {
     console.log('======= Receiver connected =======');
-    console.log('Type 1 to see all queue');
-    console.log('Type 2 to get message from general queue');
-    console.log('Type 3 to get message from specifc queue');
 
 });
 client.on('data', (data) => {
     let msg = JSON.parse(data);
-    console.log('\rReceived message: ' + msg);
+    console.log('\rReceived message: ' + JSON.stringify(msg));
 });
 client.on('close', function () {
-    console.log('Connection closed');
+    console.log('\nConnection closed');
 });
 
 client.on('error', function (err) {
@@ -33,6 +30,11 @@ showPromptTimeout();
 
 
 function showPrompt() {
+    console.log('========================================');
+    console.log('Type 1 to see all queue');
+    console.log('Type 2 to get message from general queue');
+    console.log('Type 3 to get message from specifc queue');
+
     prompt.start();
     prompt.message = 'Type your command';
 
@@ -95,7 +97,7 @@ function getMessageFromSpecificQueue() {
         if (input.name !== '') {
             let data = {
                 name: input.name,
-                type: 'getFromQueue'
+                type: 'sendToQueue'
             };
             client.write(JSON.stringify(data));
             showPromptTimeout();

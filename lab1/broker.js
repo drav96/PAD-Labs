@@ -9,7 +9,6 @@ const PORT = config.port;
 
 server.listen(PORT, ADDRESS);
 console.log('======= Broker is on =======');
-
 let generalQueue = fs.readFileSync('storage.txt').toString().split(',');
 let queueList = [];
 
@@ -75,10 +74,11 @@ function onClientConnected(socket) {
             default:
                 console.log('Something went wrong');
         }
+        fs.writeFileSync('storage.txt', generalQueue);
+        fs.writeFileSync('queueList.json', JSON.stringify(queueList));
 
     });
 
-    fs.writeFileSync('storage.txt', generalQueue);
 
     socket.on('error', () => {
         console.log('errror');
